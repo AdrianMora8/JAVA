@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #estudiantes {
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Lista de Estudiantes</h1>
+
+    <button id="btn-cargar-estudiantes">Lsitar</button>
+
+    <div id="estudiantes">
+        <!-- Aquí se cargarán los estudiantes -->
+
+    </div>
+
+    <h1>Agregar Estudiante</h1>
+    <form id="form-estudiante">
+        <input type="text" id="cedula" placeholder="Cédula" required>
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="text" id="apellido" placeholder="Apellido" required>
+        <input type="text" id="direccion" placeholder="Dirección" required>
+        <input type="text" id="telefono" placeholder="Teléfono" required>
+    </form>
+    <button id="btn-agregar-estudiante">Agregar Estudiante</button>
+    <p id="ResultadoIngreso"></p>
+
+
+    <h1>Eliminar estudiante</h1>
+    <form id="form-eliminar-estudiante">
+        <input type="text" id="cedula-eliminar" placeholder="Cédula del Estudiante" required>
+    </form>
+    <button id="btn-eliminar-estudiante">Eliminar Estudiante</button>
+    <p id="ResultadoEliminar"></p>
+
+    <h1>Actualizar estudiante</h1>
+    <form id="form-actualizar-estudiante">
+        <input type="text" id="cedula-actualizar" placeholder="Cédula del Estudiante" required>
+        <input type="text" id="nombre-actualizar" placeholder="Nombre" required>
+        <input type="text" id="apellido-actualizar" placeholder="Apellido" required>
+        <input type="text" id="direccion-actualizar" placeholder="Dirección" required>
+        <input type="text" id="telefono-actualizar" placeholder="Teléfono" required>
+    </form>
+    <button id="btn-actualizar-estudiante">Actualizar Estudiante</button>
+    <p id="ResultadoActualizar"></p>
+    <script>
+
+        //explicacion: se esta definiendo una constante 
+        //llamada urlAPI que contiene la URL base de una API
+
+        function limpiarFormulario() {
+            $("#form-estudiante")[0].reset();
+        }
+
+        function recargarEstudiantes() {
+            $("#btn-cargar-estudiantes").click();
+        }
+
+        const urlAPI = "http://localhost/Servicios/practicaApiPHP/api.php";
+
+        //explicacion: se esta definiendo un manejador de eventos
+        //para el evento de clic en un elemento HTML
+        //con el id btn-cargar-estudiantes
+        $("#btn-cargar-estudiantes").click(function () {
+            //explicacion: se esta realizando una solicitud AJAX
+            //utilizando jQuery para obtener datos de una API
+            //AJAX es una tecnica para hacer solicitudes
+            //asincronas al servidor sin recargar la pagina
+            //jQuery es una biblioteca de JavaScript
+            //que simplifica la manipulación del DOM
+            $.ajax({
+                url: urlAPI,
+                method: "GET",
+                dataType: "json",
+                success: function (data) {
+                    // Mostrar los estudiantes en una tabla
+                    let html = "<table border='1' cellpadding='8' style='border-collapse:collapse;width:100%;'><thead><tr><th>Cédula</th><th>Nombre</th><th>Apellido</th><th>Dirección</th><th>Teléfono</th></tr></thead><tbody>";
+                    data.forEach(function (estudiante) {
+                        html += `<tr>
+                            <td>${estudiante.cedula}</td>
+                            <td>${estudiante.nombre}</td>
+                            <td>${estudiante.apellido}</td>
+                            <td>${estudiante.direccion}</td>
+                            <td>${estudiante.telefono}</td>
+                        </tr>`;
+                    });
+                    html += "</tbody></table>";
+                    $("#estudiantes").html(html);
+                },
+
+            })
+
+
+        });
+
+
+        $("#btn-agregar-estudiante").click(function () {
+            $.ajax({
+                url: urlAPI,
+                method: "POST",
+                data: {
+                    cedula: $("#cedula").val(),
+                    nombre: $("#nombre").val(),
+                    apellido: $("#apellido").val(),
+                    direccion: $("#direccion").val(),
+                    telefono: $("#telefono").val()
+                },
+                success: function (data) {
+                    $("#ResultadoIngreso").text(data);
+                    limpiarFormulario();
+                    recargarEstudiantes();
+                },
+                error: function () {
+                    $("#ResultadoIngreso").text("Error al agregar el estudiante.");
+                }
+            });
+        });
+
+
+        $("#btn-eliminar-estudiante").click(function () {
+            $.ajax({
+                //explicacion: se esta realizando una solicitud AJAX
+                //y en la url se esta pasando un parametro
+                //cedula que se obtiene del valor del input
+                url: urlAPI + "?cedula=" + $("#cedula-eliminar").val(),
+                method: "DELETE",
+
+                success: function (data) {
+                    $("#ResultadoEliminar").text(data);
+                    recargarEstudiantes();
+
+                },
+                error: function () {
+                    $("#ResultadoEliminar").text("Error al eliminar el estudiante.");
+                }
+            });
+        });
+
+
+        $("#btn-actualizar-estudiante").click(function () {
+            const data = {
+                cedula: $("#cedula-actualizar").val(),
+                nombre: $("#nombre-actualizar").val(),
+                apellido: $("#apellido-actualizar").val(),
+                direccion: $("#direccion-actualizar").val(),
+                telefono: $("#telefono-actualizar").val()
+            };
+            $.ajax({
+                // vamos a pasar los datos por la url porque estamos usando el metodo PUT con get
+                url: urlAPI + "?cedula=" + data.cedula + "&nombre=" + data.nombre + "&apellido=" + data.apellido + "&direccion=" + data.direccion + "&telefono=" + data.telefono,
+                method: "PUT",
+                success: function (data) {
+                    $("#ResultadoActualizar").text(data);
+                    recargarEstudiantes();
+                },
+                error: function () {
+                    $("#ResultadoActualizar").text("Error al actualizar el estudiante.");
+                }
+            });
+        });
+
+
+
+    </script>
+
+</body>
+
+</html>
